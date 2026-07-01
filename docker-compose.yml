@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: lifebridge-postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: lifebridgepassword123
+      POSTGRES_DB: lifebridge_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lifebridge-network
+
+  db-admin:
+    image: adminer:latest
+    container_name: lifebridge-db-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - lifebridge-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lifebridge-backend-api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:lifebridgepassword123@db:5432/lifebridge_db
+      - SECRET_KEY=super-secret-lifebridge-key-change-in-production-1234567890
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - lifebridge-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lifebridge-frontend-web
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - lifebridge-network
+
+volumes:
+  postgres_data:
+
+networks:
+  lifebridge-network:
+    driver: bridge
