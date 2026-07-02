@@ -1,5 +1,6 @@
-const BASE_URL = "http://localhost:8000/api";
-
+const BASE_URL =
+  "https://friendly-beauty-production.up.railway.app/api";
+  
 // Helper to get local storage safe for SSR
 const getStorage = () => {
   if (typeof window !== "undefined") {
